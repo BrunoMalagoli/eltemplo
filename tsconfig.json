@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "jsx": "react-jsx",  // Cambia esto para habilitar JSX
+    "jsx": "react-jsx",  
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
