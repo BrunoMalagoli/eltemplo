@@ -10,9 +10,9 @@ import {
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = [
-    "/placeholder.svg?height=600&width=1200",
-    "/placeholder.svg?height=600&width=1200",
-    "/placeholder.svg?height=600&width=1200",
+    "/img/hero-background-1.jpg",
+    "/img/hero-background-2.jpg",
+    "/img/hero-background-3.jpg",
   ];
 
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -38,7 +38,7 @@ const Hero = () => {
       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
         <div className="text-center text-white">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            El Templo Bebidas
+            EL TEMPLO BEBIDAS
           </h1>
           <p className="text-xl md:text-2xl mb-12">
             Tienda Mayorista y Minorista
@@ -50,7 +50,7 @@ const Hero = () => {
               size="lg"
             >
               <a href="/cotizar">
-                <PackageSearch className="mr-2 h-4 w-4" /> Arma tu pedido
+                <PackageSearch className="mr-2 h-4 w-4" /> Reserva tu pedido
               </a>
             </Button>
             <Button asChild variant="outline" size="lg">

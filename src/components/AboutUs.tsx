@@ -5,7 +5,9 @@ const AboutUs = () => (
       <div className="flex flex-col md:flex-row items-center gap-8">
         <div className="md:w-1/2">
           <img
-            src="/placeholder.svg?height=400&width=600"
+            height={"400px"}
+            width={"600px"}
+            src="/img/about-us-img.jpg"
             alt="Sobre nosotros"
             className="rounded-lg shadow-md"
           />
