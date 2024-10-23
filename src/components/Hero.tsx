@@ -4,7 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
-  ShoppingCart,
+  PackageSearch,
 } from "lucide-react";
 
 const Hero = () => {
@@ -38,13 +38,19 @@ const Hero = () => {
       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
         <div className="text-center text-white">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            Bebidas de Calidad
+            El Templo Bebidas
           </h1>
-          <p className="text-xl md:text-2xl mb-12">Mayorista y Minorista</p>
+          <p className="text-xl md:text-2xl mb-12">
+            Tienda Mayorista y Minorista
+          </p>
           <div className="w-full h-20dvh flex flex-wrap md: mt-8 items-center justify-center gap-3">
-            <Button asChild size="lg">
+            <Button
+              className="bg-softRed hover:bg-primaryRed"
+              asChild
+              size="lg"
+            >
               <a href="/cotizar">
-                <ShoppingCart className="mr-2 h-4 w-4" /> Arma tu pedido
+                <PackageSearch className="mr-2 h-4 w-4" /> Arma tu pedido
               </a>
             </Button>
             <Button asChild variant="outline" size="lg">
