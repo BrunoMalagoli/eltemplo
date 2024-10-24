@@ -4,9 +4,21 @@ import Hero from "@/components/Hero";
 import NavBar from "@/components/NavBar";
 import Services from "@/components/Services";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import React from "react";
+import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const LandingPage = () => {
+  const { hash } = useLocation(); // Obtener el anclaje desde la URL
+
+  useEffect(() => {
+    if (hash) {
+      const element = document.querySelector(hash); // Buscar el elemento por ID
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" }); // Desplazar la vista suavemente
+      }
+    }
+  }, [hash]); // Se ejecuta cada vez que cambia el anclaje
+
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />

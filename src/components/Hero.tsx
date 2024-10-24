@@ -6,6 +6,7 @@ import {
   Download,
   PackageSearch,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -49,9 +50,9 @@ const Hero = () => {
               asChild
               size="lg"
             >
-              <a href="/cotizar">
+              <Link to={"/cotizacion"}>
                 <PackageSearch className="mr-2 h-4 w-4" /> Reserva tu pedido
-              </a>
+              </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
               <a href="" className="text-black">

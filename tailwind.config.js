@@ -14,7 +14,7 @@ module.exports = {
       colors: {
         primaryRed: "#e04855",
         softRed: "#F71735",
-        secondary: "",
+        alertYellow: "#FDE74C",
       },
     },
   },

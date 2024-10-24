@@ -6,26 +6,32 @@ import {
   Sheet,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Link } from "react-router-dom";
 
 const Navbar = () => (
   <nav className="bg-white shadow-md">
     <div className="container h-20 mx-auto px-6 py-3 flex justify-between items-center">
-      <a href="/" className="font-bold text-xl">
-        Logo
-      </a>
+      <Link to={"/"} className="font-bold text-xl">
+        <img
+          height={"60px"}
+          width={"60px"}
+          src="/img/eltemploLogo.webp"
+          alt="Logo"
+        />
+      </Link>
       <div className="hidden md:flex space-x-8">
-        <a href="#marcas" className=" p-4 hover:text-primaryRed">
+        <Link to={"/#servicios"} className=" p-4 hover:text-primaryRed">
           Servicios
-        </a>
-        <a href="#sobre-nosotros" className="p-4 hover:text-primaryRed">
+        </Link>
+        <Link to={"/#sobre-nosotros"} className="p-4 hover:text-primaryRed">
           Sobre Nosotros
-        </a>
-        <a
-          href="/cotizar"
+        </Link>
+        <Link
+          to={"/cotizacion"}
           className="bg-softRed border-2 rounded-full p-4 text-white hover:text-black "
         >
           Reserva tu pedido
-        </a>
+        </Link>
       </div>
       <Sheet>
         <SheetTrigger className="md:hidden bg-softRed text-white rounded-full hover:bg-primaryRed p-4 px-8">
@@ -36,24 +42,24 @@ const Navbar = () => (
             <SheetTitle />
             <SheetDescription>
               <div className="container h-auto p-6 flex flex-wrap gap-5">
-                <a
-                  href="#marcas"
+                <Link
+                  to={"/#servicios"}
                   className=" text-black p-4 w-full hover:text-primaryRed"
                 >
                   Servicios
-                </a>
-                <a
-                  href="#sobre-nosotros"
+                </Link>
+                <Link
+                  to={"/#sobre-nosotros"}
                   className=" text-blackp-4  w-full hover:text-primaryRed"
                 >
                   Sobre Nosotros
-                </a>
-                <a
-                  href="/cotizar"
+                </Link>
+                <Link
+                  to={"/cotizacion"}
                   className="bg-softRed  w-full border-2 rounded-full p-4 text-white hover:text-black "
                 >
                   Reserva tu pedido
-                </a>
+                </Link>
               </div>
             </SheetDescription>
           </SheetHeader>
