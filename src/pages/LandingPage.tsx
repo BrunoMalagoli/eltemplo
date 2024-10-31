@@ -12,9 +12,9 @@ const LandingPage = () => {
 
   useEffect(() => {
     if (hash) {
-      const element = document.querySelector(hash); // Buscar el elemento por ID
+      const element = document.querySelector(hash);
       if (element) {
-        element.scrollIntoView({ behavior: "smooth" }); // Desplazar la vista suavemente
+        element.scrollIntoView({ behavior: "smooth" });
       }
     }
   }, [hash]); // Se ejecuta cada vez que cambia el anclaje
