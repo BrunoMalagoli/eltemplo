@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Minus, Trash2, ShoppingCart, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PropagateLoader } from "react-spinners";
 import {
   Card,
   CardContent,
@@ -29,6 +30,8 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navbar from "@/components/NavBar";
 import { useCachedFetch } from "../../hooks/useCachedFetch";
+import CotizacionButton from "@/components/CotizacionButton";
+import { Bounce, toast } from "react-toastify";
 type Producto = {
   id: number;
   nombre: string;
@@ -51,8 +54,9 @@ export default function CotizacionPage() {
   const [mostrarAviso, setMostrarAviso] = useState(true);
   const [cotizacionString, setCotizacionString] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
-  const [error, setError] = useState(false);
+  // const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const bodegas = Array.from(
     new Set(
       productos.map((p) => {
@@ -60,7 +64,7 @@ export default function CotizacionPage() {
       })
     )
   );
-  let respuesta = useCachedFetch(
+  const respuesta = useCachedFetch(
     `${import.meta.env.VITE_API_URL}/b/6723c54bad19ca34f8c1bf58`,
     {
       headers: {
@@ -75,7 +79,7 @@ export default function CotizacionPage() {
       setProductos(respuesta.data); // Actualizar el estado de productos
       setLoading(false); // Detener loading
     } else if (respuesta.error) {
-      setError(true); // Marcar error
+      // setError(true); // Marcar error
       setLoading(false); // Detener loading
       console.log(respuesta.error);
     }
@@ -158,7 +162,9 @@ export default function CotizacionPage() {
   return (
     <>
       {loading ? (
-        <div>"CARGANDO"</div>
+        <div className="h-screen w-full flex items-center justify-center">
+          <PropagateLoader loading={loading} color="#F71735" />
+        </div>
       ) : (
         <>
           <Navbar />
@@ -255,7 +261,14 @@ export default function CotizacionPage() {
                         }}
                       />
                       <Button
-                        onClick={() => agregarProducto(producto, 1)}
+                        onClick={() => {
+                          agregarProducto(producto, 1);
+                          toast("Producto agregado!", {
+                            theme: "light",
+                            transition: Bounce,
+                            position: "bottom-left",
+                          });
+                        }}
                         className="bg-red-500 hover:bg-red-600 text-white"
                       >
                         <Plus className="mr-2 h-4 w-4" /> Agregar
@@ -287,7 +300,11 @@ export default function CotizacionPage() {
             </div>
 
             {/* Cotización en pantalla grande */}
-            <div className="hidden md:block">
+            <CotizacionButton />
+            <div
+              id="cotizacionPG"
+              className="hidden border border-gray-300 rounded-md p-4 md:block"
+            >
               <h2 className="text-xl font-semibold mb-4">Tu Cotización</h2>
               {cotizacion.map((item) => (
                 <div
@@ -302,7 +319,14 @@ export default function CotizacionPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => actualizarCantidad(item.id, -1)}
+                      onClick={() => {
+                        actualizarCantidad(item.id, -1);
+                        toast("Producto agregado!", {
+                          theme: "light",
+                          transition: Bounce,
+                          position: "bottom-left",
+                        });
+                      }}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -326,11 +350,11 @@ export default function CotizacionPage() {
               <div className="font-bold mt-4">
                 Total: ${totalCotizacion.toFixed(2)}
               </div>
-              <Button className="mt-4">
-                <a target="__blank" href={whatsappLink}>
+              <a target="__blank" href={whatsappLink}>
+                <Button className="mt-4 bg-green-600 w-1/4">
                   Cargar Pedido
-                </a>
-              </Button>
+                </Button>
+              </a>
             </div>
 
             {/* Menú inferior desplegable para móviles */}
@@ -385,11 +409,11 @@ export default function CotizacionPage() {
                   <div className="font-bold mt-4">
                     Total: ${totalCotizacion.toFixed(2)}
                   </div>
-                  <Button className="bg-green-600 mt-4 w-full">
-                    <a target="__blank" href={whatsappLink}>
+                  <a target="__blank" href={whatsappLink}>
+                    <Button className="bg-green-600 mt-4 w-full">
                       Cargar Pedido
-                    </a>
-                  </Button>
+                    </Button>
+                  </a>
                 </div>
               </SheetContent>
             </Sheet>
