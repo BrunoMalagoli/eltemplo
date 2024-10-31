@@ -59,7 +59,7 @@ const Navbar = () => (
                   to={"/cotizacion"}
                   className="bg-softRed  w-full border-2 rounded-full p-4 text-white hover:text-black "
                 >
-                  Reserva tu pedido
+                  Cotiza tu pedido
                 </Link>
               </div>
             </SheetDescription>
