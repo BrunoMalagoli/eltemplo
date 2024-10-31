@@ -1,3 +1,5 @@
+const basePath = import.meta.env.MODE === "development" ? "" : "/eltemplo/";
+
 const AboutUs = () => (
   <section id="sobre-nosotros" className="py-16">
     <div className="container mx-auto px-6">
@@ -7,7 +9,7 @@ const AboutUs = () => (
           <img
             height={"400px"}
             width={"600px"}
-            src="/img/about-us-img.jpg"
+            src={`${basePath}/about-us-img.jpg`}
             alt="Sobre nosotros"
             className="rounded-lg shadow-md"
           />

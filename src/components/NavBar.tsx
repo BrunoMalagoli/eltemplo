@@ -7,6 +7,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Link } from "react-router-dom";
+const basePath = import.meta.env.MODE === "development" ? "" : "/eltemplo/";
 
 const Navbar = () => (
   <nav className="bg-white shadow-md">
@@ -15,7 +16,7 @@ const Navbar = () => (
         <img
           height={"60px"}
           width={"60px"}
-          src="/img/eltemploLogo.webp"
+          src={`${basePath}/eltemploLogo.webp`}
           alt="Logo"
         />
       </Link>
@@ -30,7 +31,7 @@ const Navbar = () => (
           to={"/cotizacion"}
           className="bg-softRed border-2 rounded-full p-4 text-white hover:text-black "
         >
-          Reserva tu pedido
+          Cotiza tu pedido
         </Link>
       </div>
       <Sheet>

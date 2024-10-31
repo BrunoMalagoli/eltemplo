@@ -7,13 +7,14 @@ import {
   PackageSearch,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+const basePath = import.meta.env.MODE === "development" ? "" : "/eltemplo/";
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = [
-    "/img/hero-background-1.jpg",
-    "/img/hero-background-2.jpg",
-    "/img/hero-background-3.jpg",
+    `${basePath}/hero-background-1.jpg`,
+    `${basePath}/hero-background-2.jpg`,
+    `${basePath}/hero-background-3.jpg`,
   ];
 
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -51,7 +52,7 @@ const Hero = () => {
               size="lg"
             >
               <Link to={"/cotizacion"}>
-                <PackageSearch className="mr-2 h-4 w-4" /> Reserva tu pedido
+                <PackageSearch className="mr-2 h-4 w-4" /> Cotiza tu pedido
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">

@@ -3,6 +3,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { Plus, Minus, Trash2, ShoppingCart, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -25,88 +26,98 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navbar from "@/components/NavBar";
-
+import { useCachedFetch } from "../../hooks/useCachedFetch";
 type Producto = {
   id: number;
   nombre: string;
   precioUnitario: number;
   precioCaja: number;
   bodega: string;
-  enStock: boolean;
+  unidades: number;
 };
 
 type ItemCotizacion = Producto & {
   cantidad: number;
 };
 
-// Lista de productos (esto podría venir de una API en una aplicación real)
-const productos: Producto[] = [
-  {
-    id: 1,
-    nombre: "Cerveza Lager",
-    precioUnitario: 2.5,
-    precioCaja: 55,
-    bodega: "Cervecería Nacional",
-    enStock: true,
-  },
-  {
-    id: 2,
-    nombre: "Vino Tinto",
-    precioUnitario: 15,
-    precioCaja: 160,
-    bodega: "Viña del Valle",
-    enStock: true,
-  },
-  {
-    id: 3,
-    nombre: "Whisky",
-    precioUnitario: 40,
-    precioCaja: 430,
-    bodega: "Destilería Escocesa",
-    enStock: false,
-  },
-  {
-    id: 4,
-    nombre: "Vodka",
-    precioUnitario: 20,
-    precioCaja: 220,
-    bodega: "Destilería Rusa",
-    enStock: true,
-  },
-  {
-    id: 5,
-    nombre: "Gin",
-    precioUnitario: 30,
-    precioCaja: 320,
-    bodega: "Destilería Inglesa",
-    enStock: false,
-  },
-];
-
 export default function CotizacionPage() {
   const [cotizacion, setCotizacion] = useState<ItemCotizacion[]>([]);
   const [filtroNombre, setFiltroNombre] = useState("");
+  const [productos, setProductos] = useState<Producto[]>([]);
   const [filtroBodega, setFiltroBodega] = useState("todas");
-  const [filtroStock, setFiltroStock] = useState(false);
   const [productosFiltrados, setProductosFiltrados] = useState(productos);
   const [mostrarAviso, setMostrarAviso] = useState(true);
-  const [mostrarAlerta, setMostrarAlerta] = useState(true);
-
-  const bodegas = Array.from(new Set(productos.map((p) => p.bodega)));
-
+  const [cotizacionString, setCotizacionString] = useState("");
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const bodegas = Array.from(
+    new Set(
+      productos.map((p) => {
+        return p.bodega;
+      })
+    )
+  );
+  let respuesta = useCachedFetch(
+    `${import.meta.env.VITE_API_URL}/b/6723c54bad19ca34f8c1bf58`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": `${import.meta.env.VITE_API_KEY}`,
+        "X-Access-Key": `${import.meta.env.VITE_ACCESS_KEY}`,
+      },
+    }
+  );
+  useEffect(() => {
+    if (respuesta.data) {
+      setProductos(respuesta.data); // Actualizar el estado de productos
+      setLoading(false); // Detener loading
+    } else if (respuesta.error) {
+      setError(true); // Marcar error
+      setLoading(false); // Detener loading
+      console.log(respuesta.error);
+    }
+  }, [respuesta]);
+  //Logica de paginacion
+  const prodsPorPagina = 30;
+  const indexOfLastProducto = paginaActual * prodsPorPagina;
+  const indexOfFirstProducto = indexOfLastProducto - prodsPorPagina;
+  const productosAMostrar = productosFiltrados.slice(
+    indexOfFirstProducto,
+    indexOfLastProducto
+  );
+  const totalPaginas = Math.ceil(productosFiltrados.length / prodsPorPagina);
   useEffect(() => {
     const filtered = productos.filter(
       (producto) =>
         producto.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) &&
-        (filtroBodega === "todas" || producto.bodega === filtroBodega) &&
-        (!filtroStock || producto.enStock)
+        (filtroBodega === "todas" || producto.bodega === filtroBodega)
     );
     setProductosFiltrados(filtered);
-  }, [filtroNombre, filtroBodega, filtroStock]);
+  }, [productos, filtroNombre, filtroBodega]);
+  useEffect(() => {
+    const cotizacionText = cotizacion
+      .map(
+        (item) =>
+          `${item.nombre} x ${item.cantidad} - $${(
+            item.precioCaja * item.cantidad
+          ).toFixed(2)}`
+      )
+      .join("\n");
+    const total = cotizacion.reduce(
+      (sum, item) => sum + item.precioCaja * item.cantidad,
+      0
+    );
+    setCotizacionString(
+      `Mi cotización:\n${cotizacionText}\n\nTotal: $${total.toFixed(2)}`
+    );
+  }, [cotizacion]);
+
+  const whatsappLink = `https://wa.me/1167203131?text=${encodeURIComponent(
+    cotizacionString
+  )}`;
 
   const agregarProducto = (producto: Producto, cantidad: number) => {
     setCotizacion((prev) => {
@@ -146,179 +157,138 @@ export default function CotizacionPage() {
 
   return (
     <>
-      <Navbar />
-      <div className="container mx-auto p-4">
-        {mostrarAlerta && (
-          <Alert className="bg-softRed sticky top-0 z-50 mb-4">
-            <AlertDescription className="flex items-center justify-between">
-              <span className="font-bold text-lg text-white">
-                ¡Atención! El pedido mínimo es de 5 cajas.
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setMostrarAlerta(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-        {mostrarAviso && (
-          <Alert className="bg-alertYellow sticky top-0 z-50 mb-4">
-            <AlertDescription className="flex items-center justify-between">
-              <span className="font-bold text-md text-black">
-                Si su pedido supera las 20 cajas y la dirección de envio está en
-                CABA o alrededores, su pedido puede ser enviado sin cargo. Una
-                vez realizado el pedido, se le otorgará un número de pedido y se
-                deberá coordinar los detalles del envio vía WhatsApp con uno de
-                nuestros vendedores.
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setMostrarAviso(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
+      {loading ? (
+        <div>"CARGANDO"</div>
+      ) : (
+        <>
+          <Navbar />
+          <div className="container mx-auto p-4">
+            {mostrarAviso && (
+              <Alert className="bg-alertYellow sticky top-0 z-50 mb-4">
+                <AlertDescription className="flex items-center justify-between">
+                  <span className="font-bold text-md text-black">
+                    MINIMO CAJA CERRADA POR PRODUCTO.
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setMostrarAviso(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
 
-        <h1 className="text-2xl font-bold mb-6">
-          Reservá tu pedido mayorista / minorista.
-        </h1>
+            <h1 className="text-2xl font-bold mb-6">
+              Reservá tu pedido mayorista / minorista.
+            </h1>
 
-        {/* Sección de filtros */}
-        <div className="mb-6 space-y-4">
-          <div className="flex items-center space-x-2">
-            <Search className="w-5 h-5 text-gray-500" />
-            <Input
-              type="text"
-              placeholder="Buscar por nombre"
-              value={filtroNombre}
-              onChange={(e) => setFiltroNombre(e.target.value)}
-              className="flex-grow"
-            />
-          </div>
-          <div className="flex items-center space-x-4">
-            <Select value={filtroBodega} onValueChange={setFiltroBodega}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filtrar por bodega" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todas">Todas las bodegas</SelectItem>
-                {bodegas.map((bodega) => (
-                  <SelectItem key={bodega} value={bodega}>
-                    {bodega}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="stock"
-                checked={filtroStock}
-                onCheckedChange={(checked) =>
-                  setFiltroStock(checked as boolean)
-                }
-              />
-              <Label htmlFor="stock">Solo en stock</Label>
-            </div>
-          </div>
-        </div>
-
-        {/* Lista de productos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {productosFiltrados.map((producto) => (
-            <Card key={producto.id}>
-              <CardHeader>
-                <CardTitle>{producto.nombre}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Precio unitario: ${producto.precioUnitario}</p>
-                <p>Precio por caja: ${producto.precioCaja}</p>
-                <p>Bodega: {producto.bodega}</p>
-                <p>{producto.enStock ? "En stock" : "Sin stock"}</p>
-              </CardContent>
-              <CardFooter className="flex justify-between">
+            {/* Sección de filtros */}
+            <div className="mb-6 space-y-4">
+              <div className="flex items-center space-x-2">
+                <Search className="w-5 h-5 text-gray-500" />
                 <Input
-                  type="number"
-                  placeholder="Cantidad"
-                  className="w-20 mr-2"
-                  onChange={(e) => {
-                    const cantidad = parseInt(e.target.value) || 0;
-                    agregarProducto(producto, cantidad);
-                  }}
+                  type="text"
+                  placeholder="Buscar por nombre"
+                  value={filtroNombre}
+                  onChange={(e) => setFiltroNombre(e.target.value)}
+                  className="flex-grow"
                 />
-                <Button
-                  onClick={() => agregarProducto(producto, 1)}
-                  disabled={!producto.enStock}
-                  className="bg-softRed"
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Agregar
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Select value={filtroBodega} onValueChange={setFiltroBodega}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Filtrar por bodega" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas las bodegas</SelectItem>
+                    {bodegas.map((bodega) => (
+                      <SelectItem
+                        key={bodega || "todas"}
+                        value={bodega || "todas"}
+                      >
+                        {bodega}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-        {/* Cotización en pantalla grande */}
-        <div className="hidden md:block">
-          <h2 className="text-xl font-semibold mb-4">Tu Cotización</h2>
-          {cotizacion.map((item) => (
-            <div
-              key={item.id}
-              className="flex justify-between items-center mb-2"
-            >
-              <span>
-                {item.nombre} x {item.cantidad}
-              </span>
-              <span>${(item.precioCaja * item.cantidad).toFixed(2)}</span>
-              <div>
+            {/* Lista de productos */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {productosAMostrar.length > 0 ? (
+                productosAMostrar.map((producto) => (
+                  <Card key={producto.id} className="flex flex-col">
+                    <CardHeader>
+                      <CardTitle className="text-xl font-bold">
+                        {producto.nombre}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <div className="space-y-2">
+                        <p className="text-2xl font-semibold text-primary">
+                          ${producto.precioCaja}{" "}
+                          <span className="text-sm font-normal text-muted-foreground">
+                            x caja
+                          </span>
+                        </p>
+                        {producto.bodega ? (
+                          <Badge variant="secondary">{producto.bodega}</Badge>
+                        ) : (
+                          ""
+                        )}
+                        <p className="text-sm text-muted-foreground">
+                          Precio unitario: ${producto.precioUnitario}
+                        </p>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-between items-center">
+                      <Input
+                        type="number"
+                        placeholder="Cantidad"
+                        className="w-20 mr-2"
+                        onChange={(e) => {
+                          const cantidad = parseInt(e.target.value) || 0;
+                          agregarProducto(producto, cantidad);
+                        }}
+                      />
+                      <Button
+                        onClick={() => agregarProducto(producto, 1)}
+                        className="bg-red-500 hover:bg-red-600 text-white"
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> Agregar
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))
+              ) : (
+                <Alert>No hay productos disponibles</Alert>
+              )}
+              {/* Controles de paginación */}
+              <div className="flex justify-between mt-4">
                 <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => actualizarCantidad(item.id, -1)}
+                  disabled={paginaActual === 1}
+                  onClick={() => setPaginaActual(paginaActual - 1)}
                 >
-                  <Minus className="h-4 w-4" />
+                  Anterior
                 </Button>
+                <span>
+                  Página {paginaActual} de {totalPaginas}
+                </span>
                 <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => actualizarCantidad(item.id, 1)}
+                  disabled={paginaActual === totalPaginas}
+                  onClick={() => setPaginaActual(paginaActual + 1)}
                 >
-                  <Plus className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => eliminarProducto(item.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
+                  Siguiente
                 </Button>
               </div>
             </div>
-          ))}
-          <div className="font-bold mt-4">
-            Total: ${totalCotizacion.toFixed(2)}
-          </div>
-          <Button className="mt-4">Cargar Pedido</Button>
-        </div>
 
-        {/* Menú inferior desplegable para móviles */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button className="fixed text-md p-6 bottom-4 right-4 md:hidden">
-              <ShoppingCart className="mr-2 h-6 w-6" />
-              Ver Cotización
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="h-[80vh]">
-            <SheetHeader>
-              <SheetTitle>Tu Cotización</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4">
+            {/* Cotización en pantalla grande */}
+            <div className="hidden md:block">
+              <h2 className="text-xl font-semibold mb-4">Tu Cotización</h2>
               {cotizacion.map((item) => (
                 <div
                   key={item.id}
@@ -327,9 +297,7 @@ export default function CotizacionPage() {
                   <span>
                     {item.nombre} x {item.cantidad}
                   </span>
-                  <span>
-                    ${(item.precioUnitario * item.cantidad).toFixed(2)}
-                  </span>
+                  <span>${(item.precioCaja * item.cantidad).toFixed(2)}</span>
                   <div>
                     <Button
                       variant="outline"
@@ -358,11 +326,76 @@ export default function CotizacionPage() {
               <div className="font-bold mt-4">
                 Total: ${totalCotizacion.toFixed(2)}
               </div>
-              <Button className="bg-softRed mt-4 w-full">Cargar Pedido</Button>
+              <Button className="mt-4">
+                <a target="__blank" href={whatsappLink}>
+                  Cargar Pedido
+                </a>
+              </Button>
             </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+
+            {/* Menú inferior desplegable para móviles */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button className="fixed text-md p-6 bottom-4 right-4 md:hidden">
+                  <ShoppingCart className="mr-2 h-6 w-6" />
+                  Ver Cotización
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[80vh]">
+                <SheetHeader>
+                  <SheetTitle>Tu Cotización</SheetTitle>
+                </SheetHeader>
+                <div className="mt-4">
+                  {cotizacion.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex justify-between items-center mb-2"
+                    >
+                      <span>
+                        {item.nombre} x {item.cantidad}
+                      </span>
+                      <span>
+                        ${(item.precioUnitario * item.cantidad).toFixed(2)}
+                      </span>
+                      <div>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => actualizarCantidad(item.id, -1)}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => actualizarCantidad(item.id, 1)}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => eliminarProducto(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="font-bold mt-4">
+                    Total: ${totalCotizacion.toFixed(2)}
+                  </div>
+                  <Button className="bg-green-600 mt-4 w-full">
+                    <a target="__blank" href={whatsappLink}>
+                      Cargar Pedido
+                    </a>
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </>
+      )}
     </>
   );
 }
